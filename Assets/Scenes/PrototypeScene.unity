@@ -1297,7 +1297,7 @@ Transform:
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1668708372}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &76745132
 SphereCollider:
@@ -5312,7 +5312,6 @@ Transform:
   - {fileID: 384200297}
   - {fileID: 1155677090}
   - {fileID: 213954496}
-  - {fileID: 509467929}
   - {fileID: 1913462952}
   - {fileID: 1736908211}
   - {fileID: 332908901}
@@ -5321,7 +5320,6 @@ Transform:
   - {fileID: 155209715}
   - {fileID: 776546147}
   - {fileID: 906733308}
-  - {fileID: 1679261040}
   - {fileID: 621217125}
   - {fileID: 883133346}
   - {fileID: 1162011024}
@@ -5329,7 +5327,6 @@ Transform:
   - {fileID: 1742654845}
   - {fileID: 1334301429}
   - {fileID: 1264646901}
-  - {fileID: 1428649413}
   - {fileID: 1611206416}
   - {fileID: 368194095}
   - {fileID: 1656720601}
@@ -7222,7 +7219,7 @@ Transform:
   m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1167259243}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &511356061
 SphereCollider:
@@ -9707,7 +9704,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4341449868645458, guid: a728a86e0dd874fda8c3311daca94728, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.33
+      value: 3.319551
       objectReference: {fileID: 0}
     - target: {fileID: 4341449868645458, guid: a728a86e0dd874fda8c3311daca94728, type: 3}
       propertyPath: m_LocalPosition.x
@@ -10613,7 +10610,7 @@ Transform:
   m_LocalScale: {x: 1.65824, y: 1.65824, z: 1.65824}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1668708372}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &744435405
 SphereCollider:
@@ -18649,7 +18646,7 @@ Transform:
   m_LocalScale: {x: 0.4, y: 2, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1668708372}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!136 &1366247047
 CapsuleCollider:
@@ -20899,7 +20896,7 @@ Transform:
   m_LocalScale: {x: 1.65824, y: 1.65824, z: 1.65824}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1668708372}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!135 &1637985289
 SphereCollider:
@@ -23768,6 +23765,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c12dca7a904b73a4bb7f5c0663f0322d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainCamera: {fileID: 0}
+  passthroughLayer: {fileID: 0}
+  arFloorObject: {fileID: 0}
+  Tree: {fileID: 0}
 --- !u!1 &1873958748
 GameObject:
   m_ObjectHideFlags: 0
@@ -27751,3 +27752,11 @@ SceneRoots:
   - {fileID: 1873941081}
   - {fileID: 852207758}
   - {fileID: 1938561233}
+  - {fileID: 676019318}
+  - {fileID: 76745131}
+  - {fileID: 345192840}
+  - {fileID: 511356060}
+  - {fileID: 744435404}
+  - {fileID: 1366247046}
+  - {fileID: 1637985288}
+  - {fileID: 1759993676}
