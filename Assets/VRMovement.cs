@@ -71,6 +71,7 @@ public class VRMovement : MonoBehaviour
             realWorldLocation.transform.position.x <= (floorCenter.x + halfWidthPortal) &&
             realWorldLocation.transform.position.z >= (floorCenter.z - halfLengthPortal) &&
             realWorldLocation.transform.position.z <= (floorCenter.z + halfLengthPortal);
+        
 
 
         if (starCarryBack && !isWithinVirtualFloor)
@@ -112,6 +113,11 @@ public class VRMovement : MonoBehaviour
         }
         else
         {
+            if (!isWithinVirtualFloor)
+            {
+                headRb.useGravity = false;
+            }
+
  
             // Check if the trigger is held down to start flying
             if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
