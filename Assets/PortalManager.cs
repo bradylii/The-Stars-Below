@@ -4,9 +4,11 @@ using UnityEngine;
 public class PortalManager : MonoBehaviour
 {
     public Camera mainCamera; // Assign your main camera
+    public GameObject head;
     public OVRPassthroughLayer passthroughLayer; // Assign your Passthrough Layer
     public GameObject arFloorObject; // Assign the floor object in AR space (parent object)
-    public GameObject Tree;
+    public GameObject tree;
+    public GameObject portal;
 
     // Enable AR Mode
     public void EnableARMode()
@@ -26,7 +28,9 @@ public class PortalManager : MonoBehaviour
         {
             ToggleChildMeshRenderers(arFloorObject, true); // Enable all child MeshRenderers
         }
-        Tree.SetActive(true);
+        tree.SetActive(true);
+
+        portal.SetActive(false); 
     }
 
     // Enable VR Mode
@@ -46,7 +50,9 @@ public class PortalManager : MonoBehaviour
         {
             ToggleChildMeshRenderers(arFloorObject, false); // Disable all child MeshRenderers
         }
-        Tree.SetActive(false);
+        tree.SetActive(false);
+
+        portal.SetActive(true);
     }
 
     // Helper method to toggle child MeshRenderers
@@ -59,6 +65,11 @@ public class PortalManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        EnableARMode();
+    }
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.A)) // Switch to AR
@@ -69,6 +80,17 @@ public class PortalManager : MonoBehaviour
         {
             EnableVRMode();
         }
+
+        if (head.transform.position.y < 0)
+        {
+            EnableVRMode();
+        }
+        else if (head.transform.position.y > 0)
+        {
+            EnableARMode();
+        }
+
+        
     }
 
 }
