@@ -3,33 +3,72 @@ using UnityEngine;
 
 public class PortalManager : MonoBehaviour
 {
-    private OVRPassthroughLayer passthroughLayer;
+    public Camera mainCamera; // Assign your main camera
+    public OVRPassthroughLayer passthroughLayer; // Assign your Passthrough Layer
+    public GameObject arFloorObject; // Assign the floor object in AR space (parent object)
+    public GameObject Tree;
 
-    void Start()
+    // Enable AR Mode
+    public void EnableARMode()
     {
-        // Get the Passthrough Layer component
-        passthroughLayer = FindObjectOfType<OVRPassthroughLayer>();
-        if (passthroughLayer == null)
+        if (passthroughLayer != null)
         {
-            Debug.LogError("OVRPassthroughLayer not found! Please add it to your scene.");
+            passthroughLayer.hidden = false; // Show passthrough
+        }
+
+        if (mainCamera != null)
+        {
+            mainCamera.clearFlags = CameraClearFlags.SolidColor;
+            mainCamera.backgroundColor = new Color(0, 0, 0, 0); // Transparent background
+        }
+
+        if (arFloorObject != null)
+        {
+            ToggleChildMeshRenderers(arFloorObject, true); // Enable all child MeshRenderers
+        }
+        Tree.SetActive(true);
+    }
+
+    // Enable VR Mode
+    public void EnableVRMode()
+    {
+        if (passthroughLayer != null)
+        {
+            passthroughLayer.hidden = true; // Hide passthrough
+        }
+
+        if (mainCamera != null)
+        {
+            mainCamera.clearFlags = CameraClearFlags.Skybox; // Set camera background to skybox
+        }
+
+        if (arFloorObject != null)
+        {
+            ToggleChildMeshRenderers(arFloorObject, false); // Disable all child MeshRenderers
+        }
+        Tree.SetActive(false);
+    }
+
+    // Helper method to toggle child MeshRenderers
+    private void ToggleChildMeshRenderers(GameObject parentObject, bool isEnabled)
+    {
+        var meshRenderers = parentObject.GetComponentsInChildren<MeshRenderer>();
+        foreach (var meshRenderer in meshRenderers)
+        {
+            meshRenderer.enabled = isEnabled;
         }
     }
 
     void Update()
     {
-        // Example: Toggle passthrough with the A button
-        if (OVRInput.GetDown(OVRInput.Button.One)) // A button on Quest controllers
+        if (Input.GetKeyDown(KeyCode.A)) // Switch to AR
         {
-            TogglePassthrough();
+            EnableARMode();
+        }
+        else if (Input.GetKeyDown(KeyCode.V)) // Switch to VR
+        {
+            EnableVRMode();
         }
     }
 
-    void TogglePassthrough()
-    {
-        if (passthroughLayer != null)
-        {
-            passthroughLayer.enabled = !passthroughLayer.enabled;
-            Debug.Log("Passthrough " + (passthroughLayer.enabled ? "enabled" : "disabled"));
-        }
-    }
 }
