@@ -10,9 +10,12 @@ public class PortalManager : MonoBehaviour
     public GameObject tree;
     public GameObject portal;
 
+    public bool isVR;
+
     // Enable AR Mode
     public void EnableARMode()
     {
+        isVR = false;
         if (passthroughLayer != null)
         {
             passthroughLayer.hidden = false; // Show passthrough
@@ -30,12 +33,13 @@ public class PortalManager : MonoBehaviour
         }
         tree.SetActive(true);
 
-        portal.SetActive(false); 
+        portal.SetActive(false);
     }
 
     // Enable VR Mode
     public void EnableVRMode()
     {
+        isVR = true;
         if (passthroughLayer != null)
         {
             passthroughLayer.hidden = true; // Hide passthrough
@@ -90,7 +94,7 @@ public class PortalManager : MonoBehaviour
             EnableARMode();
         }
 
-        
+
     }
 
 }
