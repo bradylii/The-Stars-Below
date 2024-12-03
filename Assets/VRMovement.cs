@@ -29,12 +29,15 @@ public class VRMovement : MonoBehaviour
     private bool isWithinPortalFloor;
 
     private PortalManager portalManager;
+    private StarInteraction starInteraction;
 
 
     void Start()
     {
-        
+
         portalManager = GetComponent<PortalManager>();
+        starInteraction = GetComponent<starInteraction>();
+
 
         // Get the Rigidbody component from the head object
         headRb = head.GetComponent<Rigidbody>();
@@ -65,7 +68,8 @@ public class VRMovement : MonoBehaviour
             realWorldLocation.transform.position.x >= (floorCenter.x - halfWidth) &&
             realWorldLocation.transform.position.x <= (floorCenter.x + halfWidth) &&
             realWorldLocation.transform.position.z >= (floorCenter.z - halfLength) &&
-            realWorldLocation.transform.position.z <= (floorCenter.z + halfLength);
+            realWorldLocation.transform.position.z <= (floorCenter.z + halfLength) &&
+            head.transform.position.y > -13.8f;
 
         Vector3 portalCenter = portalFloor.transform.position;
         float halfWidthPortal = virtualFloor.transform.localScale.x / 2f;
@@ -73,43 +77,72 @@ public class VRMovement : MonoBehaviour
 
         // Check if the head is within the bounds of the portal floor (2D check)
         isWithinPortalFloor =
-            realWorldLocation.transform.position.x >= (floorCenter.x - halfWidthPortal) &&
-            realWorldLocation.transform.position.x <= (floorCenter.x + halfWidthPortal) &&
-            realWorldLocation.transform.position.z >= (floorCenter.z - halfLengthPortal) &&
-            realWorldLocation.transform.position.z <= (floorCenter.z + halfLengthPortal);
-        
+            realWorldLocation.transform.position.x >= (portalCenter.x - halfWidthPortal) &&
+            realWorldLocation.transform.position.x <= (portalCenter.x + halfWidthPortal) &&
+            realWorldLocation.transform.position.z >= (portalCenter.z - halfLengthPortal) &&
+            realWorldLocation.transform.position.z <= (portalCenter.z + halfLengthPortal) &&
+            head.transform.position.y > -13.8f;
+
+
         if (portalManager.isVR)
         {
-            if (starCarryBack && !isWithinVirtualFloor)
+            if (starInteraction.isGrabbed && !isWithinVirtualFloor) // if carrying star, bring back  to zone
             {
-                //headRb.useGravity = false;
+                // Move the head to the real world location smoothly
+                Vector3 targetPosition = realWorldLocation.transform.position;
 
-                // Calculate the direction from the current head position to the realWorldLocation
-                Vector3 direction = (realWorldLocation.transform.position - head.transform.position).normalized;
+                // Move head position towards the real world location with smooth interpolation
+                head.transform.position = Vector3.Lerp(
+                    head.transform.position,  // Start position (current head position)
+                    targetPosition,           // End position (real world location)
+                    carryBackSpeed * Time.deltaTime // Smooth movement speed
+                );
 
-                // Move the head towards the realWorldLocation gradually
-                head.transform.position += direction * carryBackSpeed * Time.deltaTime;
-
-                // Snap to the realWorldLocation position if close enough
-                if (Vector3.Distance(head.transform.position, realWorldLocation.transform.position) < 0.1f)
+                // Optionally, stop the movement once close enough to the target
+                if (Vector3.Distance(head.transform.position, targetPosition) < 0.1f)
                 {
-                    head.transform.position = realWorldLocation.transform.position;
-                    starCarryBack = false; // Reset the carry-back flag
+                    // Snap to the exact target position when close enough
+                    head.transform.position = targetPosition;
+
+                    // Optionally reset the flag or do other logic after reaching the location
+                    starCarryBack = false; // Reset carry-back flag after reaching the destination
                 }
 
             }
 
             // Inside the virtual floor area, disable flying and jump
-            else if (isWithinVirtualFloor)
+            else if (isWithinVirtualFloor) //jumping, colliders off 
             {
 
                 headRb.useGravity = true;
+                if (isWithinPortalFloor)
+                {
+                    Debug.Log("On portal");
+                }
 
-                //if (isWithinPortalFloor && OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
-                //{
-                //    // JUMP/FLY UP INTO PASS THROUGH 
-                //    // 
-                //}
+                if (isWithinPortalFloor && OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
+                {
+                    // JUMP/FLY UP INTO PASS THROUGH 
+                    // Start moving the head up to y = 0 if the head is not already at y = 0
+                    if (head.transform.position.y > targetYPosition)
+                    {
+                        // Move the head up gradually towards y = 0 using Lerp or MoveTowards
+                        head.transform.position = Vector3.Lerp(
+                            head.transform.position,  // Current position
+                            new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z),  // Target position (y = 0)
+                            Time.deltaTime * moveUpSpeed  // Smooth movement speed
+                        );
+                    }
+                    else
+                    {
+                        // Ensure that the head stays exactly at y = 0 once it reaches that point
+                        head.transform.position = new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z);
+
+                        // Enable AR Mode or other actions after the movement is complete
+                        portalManager.EnableARMode();
+                    }
+
+                }
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
                     // JUMP: Apply an upward force
@@ -117,7 +150,7 @@ public class VRMovement : MonoBehaviour
                 }
 
             }
-            else
+            else // flying, turn on colliders, 
             {
                 if (!isWithinVirtualFloor)
                 {
@@ -159,7 +192,7 @@ public class VRMovement : MonoBehaviour
             headRb.useGravity = true;
         }
 
-        
+
 
     }
 
