@@ -6,6 +6,9 @@ TagManager:
   tags:
   - sleepStarHolder
   - sleepStar
+  - SamplesInfoPanel
+  - 7Pointed
+  - 7PointedHolder
   layers:
   - Default
   - TransparentFX
