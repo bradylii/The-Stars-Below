@@ -32,20 +32,20 @@ public class StarInteraction : MonoBehaviour
         else if (!rightGripPressed && grabber.grabbedObject == null)
         {
             isGrabbed = false;
-            Debug.Log("Released with Right Controller");
+            //Debug.Log("Released with Right Controller");
         }
 
         // Detect when the Left Controller Grip button is pressed and grabbed object is detected
         if (leftGripPressed && grabber.grabbedObject != null)
         {
             isGrabbed = true;
-            Debug.Log("Grabbing with Left Controller: " + grabber.grabbedObject.name);
+            //Debug.Log("Grabbing with Left Controller: " + grabber.grabbedObject.name);
         }
         // Detect when the Left Controller Grip button is released and check if the object is released
         else if (!leftGripPressed && grabber.grabbedObject == null)
         {
             isGrabbed = false;
-            Debug.Log("Released with Left Controller");
+            //Debug.Log("Released with Left Controller");
         }
     }
 }

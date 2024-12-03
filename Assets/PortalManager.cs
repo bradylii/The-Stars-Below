@@ -7,6 +7,8 @@ public class PortalManager : MonoBehaviour
     public GameObject head;
     public OVRPassthroughLayer passthroughLayer; // Assign your Passthrough Layer
     public GameObject arFloorObject; // Assign the floor object in AR space (parent object)
+
+    public GameObject vrFloorObject;
     public GameObject tree;
     public GameObject portal;
 
@@ -31,6 +33,11 @@ public class PortalManager : MonoBehaviour
         {
             ToggleChildMeshRenderers(arFloorObject, true); // Enable all child MeshRenderers
         }
+
+        if (vrFloorObject != null)
+        {
+            ToggleChildMeshRenderers(vrFloorObject, true); // Enable all child MeshRenderers
+        }
         tree.SetActive(true);
 
         portal.SetActive(false);
@@ -53,6 +60,11 @@ public class PortalManager : MonoBehaviour
         if (arFloorObject != null)
         {
             ToggleChildMeshRenderers(arFloorObject, false); // Disable all child MeshRenderers
+        }
+
+        if (vrFloorObject != null)
+        {
+            ToggleChildMeshRenderers(vrFloorObject, false); // Disable all child MeshRenderers
         }
         tree.SetActive(false);
 

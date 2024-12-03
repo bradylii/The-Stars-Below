@@ -15,7 +15,7 @@ public class VRMovement : MonoBehaviour
     public float gravity = 9.8f; // Simulated gravity
     public float upwardForce = 1f; // Upward force when flying
     public float jumpForce = 7f; // Jump force when jumping
-    public float carryBackSpeed = 2f; // Speed for carrying the player back
+    public float carryBackSpeed = .5f; // Speed for carrying the player back
 
     private Rigidbody headRb; // Rigidbody on the head object
     private bool isFlying = false; // Whether the user is in flying mode
@@ -31,12 +31,14 @@ public class VRMovement : MonoBehaviour
     private PortalManager portalManager;
     private StarInteraction starInteraction;
 
+    private Vector3 targetPosition;
+
 
     void Start()
     {
 
         portalManager = GetComponent<PortalManager>();
-        starInteraction = GetComponent<starInteraction>();
+        starInteraction = GetComponent<StarInteraction>();
 
 
         // Get the Rigidbody component from the head object
@@ -86,42 +88,52 @@ public class VRMovement : MonoBehaviour
 
         if (portalManager.isVR)
         {
-            if (starInteraction.isGrabbed && !isWithinVirtualFloor) // if carrying star, bring back  to zone
+            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))//(StarInteraction.isGrabbed && !isWithinVirtualFloor) // if carrying star, bring back to zone
             {
-                // Move the head to the real world location smoothly
-                Vector3 targetPosition = realWorldLocation.transform.position;
+                starCarryBack = true;
+            }
+            if (starCarryBack)
+            {
+                if (targetPosition == Vector3.zero) // Check if the targetPosition has not been set yet
+                {
+                    // Create a target position based on the real-world location's X and Z, and set Y to -13.8
+                    targetPosition = new Vector3(
+                        realWorldLocation.transform.position.x, // Use the X position from realWorldLocation
+                        -13.8f,                                 // Keep Y fixed at -13.8
+                        realWorldLocation.transform.position.z  // Use the Z position from realWorldLocation
+                    );
+                }
 
-                // Move head position towards the real world location with smooth interpolation
+                // Smoothly move the head towards the target position
                 head.transform.position = Vector3.Lerp(
-                    head.transform.position,  // Start position (current head position)
-                    targetPosition,           // End position (real world location)
+                    head.transform.position,       // Start position (current head position)
+                    targetPosition,                // End position (real world location with fixed Y)
                     carryBackSpeed * Time.deltaTime // Smooth movement speed
                 );
+                //Debug.Log("Moving towards target: " + targetPosition);
 
                 // Optionally, stop the movement once close enough to the target
-                if (Vector3.Distance(head.transform.position, targetPosition) < 0.1f)
+                if (Vector3.Distance(new Vector3(head.transform.position.x, -13.8f, head.transform.position.z), targetPosition) < 0.2f)
                 {
                     // Snap to the exact target position when close enough
                     head.transform.position = targetPosition;
 
-                    // Optionally reset the flag or do other logic after reaching the location
-                    starCarryBack = false; // Reset carry-back flag after reaching the destination
+                    // Reset the carry-back flag after reaching the target
+                    starCarryBack = false;
+                    targetPosition = Vector3.zero; // Reset target position
                 }
-
             }
+
 
             // Inside the virtual floor area, disable flying and jump
             else if (isWithinVirtualFloor) //jumping, colliders off 
             {
 
                 headRb.useGravity = true;
-                if (isWithinPortalFloor)
-                {
-                    Debug.Log("On portal");
-                }
 
                 if (isWithinPortalFloor && OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
+                    float targetYPosition = 0f;
                     // JUMP/FLY UP INTO PASS THROUGH 
                     // Start moving the head up to y = 0 if the head is not already at y = 0
                     if (head.transform.position.y > targetYPosition)
@@ -130,7 +142,7 @@ public class VRMovement : MonoBehaviour
                         head.transform.position = Vector3.Lerp(
                             head.transform.position,  // Current position
                             new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z),  // Target position (y = 0)
-                            Time.deltaTime * moveUpSpeed  // Smooth movement speed
+                            Time.deltaTime * 1f  // Smooth movement speed
                         );
                     }
                     else
@@ -152,6 +164,7 @@ public class VRMovement : MonoBehaviour
             }
             else // flying, turn on colliders, 
             {
+                //Debug.Log(targetPosition);
                 if (!isWithinVirtualFloor)
                 {
                     headRb.useGravity = false;
@@ -176,13 +189,6 @@ public class VRMovement : MonoBehaviour
                     isFlying = false; // Disable flying mode
                     headRb.useGravity = false;
                 }
-
-                //// Apply upward force if flying
-                //if (isFlying)
-                //{
-                //    headRb.AddForce(Vector3.up * upwardForce, ForceMode.Acceleration);
-                //}
-
 
 
             }
