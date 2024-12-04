@@ -57,7 +57,7 @@ public class PortalManager : MonoBehaviour
         portal.SetActive(false);
         portalVRCover.SetActive(false);
 
-        portalStarKey.transform.position = new Vector3(-0.292f, 0.896f, 0);
+        portalStarKey.transform.position = new Vector3(-0.292f, 0.6f, -2.01f);
 
         portalMask.SetActive(true);
 
