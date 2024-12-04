@@ -42,10 +42,23 @@ public class StarTreeMatching : MonoBehaviour
     // Lock the star into the holder
     private void LockStarInHolder(GameObject star)
     {
-        star.transform.position = this.transform.position;
-        // Make the star a child of the holder object
-        // star.transform.SetParent(this.transform);
+        // Save the original scale of the star
+        Vector3 originalScale = star.transform.localScale;
 
+        // Move the star to the position of the holder
+        star.transform.position = this.transform.position;
+
+        // Make the star a child of the parent object’s parent (grandparent)
+        Transform parentTransform = this.transform.parent; // Get the parent of the current object (grandparent)
+        star.transform.SetParent(parentTransform);
+
+        // Adjust the scale of the star based on the parent's scale (if needed)
+        Vector3 parentScale = this.transform.localScale;
+        star.transform.localScale = new Vector3(
+            originalScale.x / parentScale.x,
+            originalScale.y / parentScale.y,
+            originalScale.z / parentScale.z
+        );
 
         // Change the color of the star holder and portalOpener to green
         ChangeHolderColor(lockedColor);
@@ -53,23 +66,31 @@ public class StarTreeMatching : MonoBehaviour
 
         // Optionally disable any further interaction (e.g., grabbing) or add other effects
         Debug.Log("Star locked into the holder!");
-
     }
+
+
 
     // Change the color of the holder object to the specified color
     private void ChangeHolderColor(Color newColor)
     {
-        Renderer holderRenderer = GetComponent<Renderer>();  // Get the Renderer component of the holder
+        // Create a new green material
+        Material greenMaterial = new Material(Shader.Find("Standard"));  // You can use any shader you prefer
+        greenMaterial.color = newColor;  // Set the material color to green or the specified color
+
+        // Get the Renderer component of the holder
+        Renderer holderRenderer = GetComponent<Renderer>();
 
         if (holderRenderer != null)
         {
-            holderRenderer.material.color = newColor;  // Change the material color
+            // Apply the new material to the object
+            holderRenderer.material = greenMaterial;
         }
         else
         {
             Debug.LogWarning("Renderer not found on the holder object!");
         }
     }
+
 
     // Change the color of the portalOpener object to the specified color
     private void ChangePortalOpenerColor(Color newColor)
