@@ -9,6 +9,14 @@ TagManager:
   - SamplesInfoPanel
   - 7Pointed
   - 7PointedHolder
+  - butterfly
+  - butterflyHolder
+  - dancing
+  - dancingHolder
+  - singing
+  - singingHolder
+  - portalOpenerHolder
+  - portalOpener
   layers:
   - Default
   - TransparentFX

@@ -12,12 +12,23 @@ public class PortalManager : MonoBehaviour
     public GameObject tree;
     public GameObject portal;
 
+    public GameObject portalMask; //portal floor mask
+    public GameObject portalStarKey;
+
+    public bool hidePortal; // cover portal or not
+
     public bool isVR;
+
+    private StarTreeMatching unlock;
+
+   
 
     // Enable AR Mode
     public void EnableARMode()
     {
+        head.transform.position = new Vector3(0, 0, 0);
         isVR = false;
+
         if (passthroughLayer != null)
         {
             passthroughLayer.hidden = false; // Show passthrough
@@ -41,12 +52,20 @@ public class PortalManager : MonoBehaviour
         tree.SetActive(true);
 
         portal.SetActive(false);
+
+        portalStarKey.transform.position = new Vector3(-1.4f, .7f, 0f);
+
+        portalMask.SetActive(true);
+
+        hidePortal = true;
+
     }
 
     // Enable VR Mode
     public void EnableVRMode()
     {
         isVR = true;
+
         if (passthroughLayer != null)
         {
             passthroughLayer.hidden = true; // Hide passthrough
@@ -69,6 +88,7 @@ public class PortalManager : MonoBehaviour
         tree.SetActive(false);
 
         portal.SetActive(true);
+
     }
 
     // Helper method to toggle child MeshRenderers
@@ -83,28 +103,47 @@ public class PortalManager : MonoBehaviour
 
     private void Start()
     {
+        unlock = GetComponent<StarTreeMatching>();
         EnableARMode();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.A)) // Switch to AR
-        {
-            EnableARMode();
-        }
-        else if (Input.GetKeyDown(KeyCode.V)) // Switch to VR
+        Vector3 portalCenter = portalMask.transform.position;
+        float halfWidthPortal = portalMask.transform.localScale.x / 2f;
+        float halfLengthPortal = portalMask.transform.localScale.z / 2f;
+
+        // Define a buffer zone (a margin where the user has to be deeper within the portal region)
+        float portalEdgeBuffer = 0.0f; // Adjust this value to determine how deep the user needs to be inside the portal region
+
+        // Check if the head is within the inner bounds of the portal floor (2D check)
+        bool isWithinPortalFloor =
+            mainCamera.transform.position.x > (portalCenter.x - halfWidthPortal + portalEdgeBuffer) &&
+            mainCamera.transform.position.x < (portalCenter.x + halfWidthPortal - portalEdgeBuffer) &&
+            mainCamera.transform.position.z > (portalCenter.z - halfLengthPortal + portalEdgeBuffer) &&
+            mainCamera.transform.position.z < (portalCenter.z + halfLengthPortal - portalEdgeBuffer);
+
+        if (isWithinPortalFloor && !hidePortal && !isVR)
         {
             EnableVRMode();
+            
+        } 
+
+        if (StarTreeMatching.unlockedPortal)
+        {
+            portalMask.SetActive(false);
+            hidePortal = false;
         }
 
-        if (head.transform.position.y < 0)
-        {
-            EnableVRMode();
-        }
-        else if (head.transform.position.y > 0)
-        {
-            EnableARMode();
-        }
+
+        //if (head.transform.position.y < 0)
+        //{
+        //    EnableVRMode();
+        //}
+        //else if (head.transform.position.y > 0)
+        //{
+        //    EnableARMode();
+        //}
 
 
     }

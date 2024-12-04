@@ -32,14 +32,13 @@ public class VRMovement : MonoBehaviour
     private StarInteraction starInteraction;
 
     private Vector3 targetPosition;
-
+    private Collider headCollider;
 
     void Start()
     {
-
         portalManager = GetComponent<PortalManager>();
         starInteraction = GetComponent<StarInteraction>();
-
+        headCollider = head.GetComponent<Collider>();
 
         // Get the Rigidbody component from the head object
         headRb = head.GetComponent<Rigidbody>();
@@ -56,42 +55,54 @@ public class VRMovement : MonoBehaviour
 
     void Update()
     {
-        if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
-        {
-            starCarryBack = true;
-        }
-        // Calculate the bounds of the virtual floor
-        Vector3 floorCenter = virtualFloor.transform.position;
-        float halfWidth = virtualFloor.transform.localScale.x / 2f;
-        float halfLength = virtualFloor.transform.localScale.z / 2f;
-
-        // Check if the head is within the bounds of the virtual floor (2D check)
-        isWithinVirtualFloor =
-            realWorldLocation.transform.position.x >= (floorCenter.x - halfWidth) &&
-            realWorldLocation.transform.position.x <= (floorCenter.x + halfWidth) &&
-            realWorldLocation.transform.position.z >= (floorCenter.z - halfLength) &&
-            realWorldLocation.transform.position.z <= (floorCenter.z + halfLength) &&
-            head.transform.position.y > -13.8f;
-
-        Vector3 portalCenter = portalFloor.transform.position;
-        float halfWidthPortal = virtualFloor.transform.localScale.x / 2f;
-        float halfLengthPortal = virtualFloor.transform.localScale.z / 2f;
-
-        // Check if the head is within the bounds of the portal floor (2D check)
-        isWithinPortalFloor =
-            realWorldLocation.transform.position.x >= (portalCenter.x - halfWidthPortal) &&
-            realWorldLocation.transform.position.x <= (portalCenter.x + halfWidthPortal) &&
-            realWorldLocation.transform.position.z >= (portalCenter.z - halfLengthPortal) &&
-            realWorldLocation.transform.position.z <= (portalCenter.z + halfLengthPortal) &&
-            head.transform.position.y > -13.8f;
-
-
         if (portalManager.isVR)
         {
-            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))//(StarInteraction.isGrabbed && !isWithinVirtualFloor) // if carrying star, bring back to zone
+            // Disable kinematic component in VR mode (use physics)
+            headRb.isKinematic = false;
+            headRb.useGravity = true;
+            headCollider.enabled = true;
+
+            if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
             {
                 starCarryBack = true;
             }
+
+            // Calculate the bounds of the virtual floor
+            Vector3 floorCenter = virtualFloor.transform.position;
+            float halfWidth = virtualFloor.transform.localScale.x / 2f;
+            float halfLength = virtualFloor.transform.localScale.z / 2f;
+
+            // Check if the head is within the bounds of the virtual floor (2D check)
+            isWithinVirtualFloor =
+                realWorldLocation.transform.position.x >= (floorCenter.x - halfWidth) &&
+                realWorldLocation.transform.position.x <= (floorCenter.x + halfWidth) &&
+                realWorldLocation.transform.position.z >= (floorCenter.z - halfLength) &&
+                realWorldLocation.transform.position.z <= (floorCenter.z + halfLength) &&
+                head.transform.position.y > -13.8f;
+
+            Vector3 portalCenter = portalFloor.transform.position;
+            float halfWidthPortal = portalFloor.transform.localScale.x / 2f;
+            float halfLengthPortal = portalFloor.transform.localScale.z / 2f;
+
+            // Check if the head is within the bounds of the portal floor (2D check)
+            isWithinPortalFloor =
+                realWorldLocation.transform.position.x >= (portalCenter.x - halfWidthPortal) &&
+                realWorldLocation.transform.position.x <= (portalCenter.x + halfWidthPortal) &&
+                realWorldLocation.transform.position.z >= (portalCenter.z - halfLengthPortal) &&
+                realWorldLocation.transform.position.z <= (portalCenter.z + halfLengthPortal) &&
+                head.transform.position.y > -13.8f;
+
+            if (isWithinPortalFloor)
+            {
+                Debug.Log("withinPortal");
+            }
+
+            if (isWithinVirtualFloor)
+            {
+                Debug.Log("withinVirtualFLOOR");
+            }
+            
+
             if (starCarryBack)
             {
                 if (targetPosition == Vector3.zero) // Check if the targetPosition has not been set yet
@@ -110,7 +121,6 @@ public class VRMovement : MonoBehaviour
                     targetPosition,                // End position (real world location with fixed Y)
                     carryBackSpeed * Time.deltaTime // Smooth movement speed
                 );
-                //Debug.Log("Moving towards target: " + targetPosition);
 
                 // Optionally, stop the movement once close enough to the target
                 if (Vector3.Distance(new Vector3(head.transform.position.x, -13.8f, head.transform.position.z), targetPosition) < 0.2f)
@@ -124,19 +134,18 @@ public class VRMovement : MonoBehaviour
                 }
             }
 
-
             // Inside the virtual floor area, disable flying and jump
-            else if (isWithinVirtualFloor) //jumping, colliders off 
+            else if (isWithinVirtualFloor) // jumping, colliders off 
             {
-
                 headRb.useGravity = true;
 
                 if (isWithinPortalFloor && OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
+
                     float targetYPosition = 0f;
                     // JUMP/FLY UP INTO PASS THROUGH 
                     // Start moving the head up to y = 0 if the head is not already at y = 0
-                    if (head.transform.position.y > targetYPosition)
+                    if (head.transform.position.y < targetYPosition)
                     {
                         // Move the head up gradually towards y = 0 using Lerp or MoveTowards
                         head.transform.position = Vector3.Lerp(
@@ -150,8 +159,11 @@ public class VRMovement : MonoBehaviour
                         // Ensure that the head stays exactly at y = 0 once it reaches that point
                         head.transform.position = new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z);
 
+
+                        headCollider.enabled = false;
                         // Enable AR Mode or other actions after the movement is complete
                         portalManager.EnableARMode();
+                        
                     }
 
                 }
@@ -164,12 +176,20 @@ public class VRMovement : MonoBehaviour
             }
             else // flying, turn on colliders, 
             {
-                //Debug.Log(targetPosition);
+                // Flying mode
                 if (!isWithinVirtualFloor)
                 {
                     headRb.useGravity = false;
                 }
 
+                //if (head.transform.position.y > -9f)
+                //{
+                //    headRb.useGravity = true;
+                //}
+                //else
+                //{
+                //    headRb.useGravity = false;
+                //}
 
                 // Check if the trigger is held down to start flying
                 if (OVRInput.Get(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
@@ -179,7 +199,7 @@ public class VRMovement : MonoBehaviour
 
                     // Get the controller's forward direction
                     Vector3 controllerDirection = controller.transform.forward;
-                    Debug.Log(controllerDirection);
+                   
 
                     // Apply force to move in the controller's direction
                     headRb.AddForce(controllerDirection * speed, ForceMode.Acceleration);
@@ -187,21 +207,17 @@ public class VRMovement : MonoBehaviour
                 else if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
                     isFlying = false; // Disable flying mode
-                    headRb.useGravity = false;
+
+                    
+
                 }
-
-
             }
         }
         else
         {
-            headRb.useGravity = true;
+            // If not in VR mode, enable kinematic mode
+            headRb.isKinematic = true;
+            headRb.useGravity = true; // Enable gravity
         }
-
-
-
     }
-
-
-
 }
