@@ -63,7 +63,7 @@ public class VRMovement : MonoBehaviour
             // Disable kinematic component in VR mode (use physics)
             headRb.isKinematic = false;
             headRb.useGravity = true;
-            camCollider.enabled = true;
+            headCollider.enabled = true;
 
             if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
             {
@@ -148,38 +148,28 @@ public class VRMovement : MonoBehaviour
                     Debug.Log("flyintopass");
 
                     float targetYPosition = 0f;
-
-                    // Start the flying/jumping process
-                    if (head.transform.position.y < targetYPosition && !isFlyingUp)
+                    // JUMP/FLY UP INTO PASS THROUGH 
+                    // Start moving the head up to y = 0 if the head is not already at y = 0
+                    if (head.transform.position.y > targetYPosition)
                     {
                         Debug.Log("doingthis");
-                        isFlyingUp = true;  // Set the flag to true so that the head keeps moving up
+                        // Move the head up gradually towards y = 0 using Lerp or MoveTowards
+                        head.transform.position = Vector3.Lerp(
+                            head.transform.position,  // Current position
+                            new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z),  // Target position (y = 0)
+                            Time.deltaTime * 1f  // Smooth movement speed
+                        );
                     }
-                }
-
-                // If we started flying up, continue the movement until we reach the target position
-                if (isFlyingUp)
-                {
-                    float targetYPosition = 0f;
-
-                    // Move the head up gradually towards y = 0 using Lerp or MoveTowards
-                    head.transform.position = Vector3.Lerp(
-                        head.transform.position,  // Current position
-                        new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z),  // Target position (y = 0)
-                        Time.deltaTime * 1f  // Smooth movement speed
-                    );
-
-                    // Once the head reaches the target position, stop the movement and perform actions
-                    if (Mathf.Abs(head.transform.position.y - targetYPosition) < 0.1f)
+                    else
                     {
-                        // Snap the head position exactly to y = 0 to avoid any floating point precision errors
+                        // Ensure that the head stays exactly at y = 0 once it reaches that point
                         head.transform.position = new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z);
 
-                        // Disable the collider and enable AR mode
-                        camCollider.enabled = false;
+
+                        headCollider.enabled = false;
+                        // Enable AR Mode or other actions after the movement is complete
                         portalManager.EnableARMode();
 
-                        isFlyingUp = false;  // Reset the flag once the movement is complete
                     }
                 }
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))

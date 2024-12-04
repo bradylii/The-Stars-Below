@@ -12,6 +12,8 @@ public class PortalManager : MonoBehaviour
     public GameObject tree;
     public GameObject portal;
 
+    public GameObject portalVRCover;
+
     public GameObject portalMask; //portal floor mask
     public GameObject portalStarKey;
 
@@ -20,6 +22,7 @@ public class PortalManager : MonoBehaviour
     public bool isVR;
 
     public StarTreeMatching unlock;
+    public GameObject rockFall;
 
 
 
@@ -52,6 +55,7 @@ public class PortalManager : MonoBehaviour
         tree.SetActive(true);
 
         portal.SetActive(false);
+        portalVRCover.SetActive(false);
 
         portalStarKey.transform.position = new Vector3(0, 0, 0);
 
@@ -90,6 +94,7 @@ public class PortalManager : MonoBehaviour
         }
         tree.SetActive(false);
 
+        portalVRCover.SetActive(true);
         portal.SetActive(true);
 
     }
@@ -118,7 +123,7 @@ public class PortalManager : MonoBehaviour
         float halfLengthPortal = portalMask.transform.localScale.z / 2f;
 
         // Define a buffer zone (a margin where the user has to be deeper within the portal region)
-        float portalEdgeBuffer = 0.1f; // Adjust this value to determine how deep the user needs to be inside the portal region
+        float portalEdgeBuffer = 0.5f; // Adjust this value to determine how deep the user needs to be inside the portal region
 
         // Check if the head is within the inner bounds of the portal floor (2D check)
         bool isWithinPortalFloor =
@@ -130,6 +135,7 @@ public class PortalManager : MonoBehaviour
         if (isWithinPortalFloor && !hidePortal && !isVR)
         {
             EnableVRMode();
+            rockFall.SetActive(false);
 
         }
 
@@ -137,6 +143,7 @@ public class PortalManager : MonoBehaviour
         {
             portalMask.SetActive(false);
             hidePortal = false;
+            rockFall.SetActive(false);
         }
 
 

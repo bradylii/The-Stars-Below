@@ -43,6 +43,8 @@ public class StarTreeMatching : MonoBehaviour
     private void LockStarInHolder(GameObject star)
     {
         star.transform.position = this.transform.position;
+        // Make the star a child of the holder object
+        // star.transform.SetParent(this.transform);
 
 
         // Change the color of the star holder and portalOpener to green
