@@ -19,9 +19,9 @@ public class PortalManager : MonoBehaviour
 
     public bool isVR;
 
-    private StarTreeMatching unlock;
+    public StarTreeMatching unlock;
 
-   
+
 
     // Enable AR Mode
     public void EnableARMode()
@@ -53,11 +53,13 @@ public class PortalManager : MonoBehaviour
 
         portal.SetActive(false);
 
-        portalStarKey.transform.position = new Vector3(-1.4f, .7f, 0f);
+        portalStarKey.transform.position = new Vector3(0, 0, 0);
 
         portalMask.SetActive(true);
 
         hidePortal = true;
+
+        unlock.resetKey();
 
     }
 
@@ -65,6 +67,7 @@ public class PortalManager : MonoBehaviour
     public void EnableVRMode()
     {
         isVR = true;
+        head.transform.position += new Vector3(0f, -1.5f, 0f);
 
         if (passthroughLayer != null)
         {
@@ -101,9 +104,10 @@ public class PortalManager : MonoBehaviour
         }
     }
 
+
     private void Start()
     {
-        unlock = GetComponent<StarTreeMatching>();
+        //unlock = GetComponent<StarTreeMatching>();
         EnableARMode();
     }
 
@@ -114,7 +118,7 @@ public class PortalManager : MonoBehaviour
         float halfLengthPortal = portalMask.transform.localScale.z / 2f;
 
         // Define a buffer zone (a margin where the user has to be deeper within the portal region)
-        float portalEdgeBuffer = 0.0f; // Adjust this value to determine how deep the user needs to be inside the portal region
+        float portalEdgeBuffer = 0.1f; // Adjust this value to determine how deep the user needs to be inside the portal region
 
         // Check if the head is within the inner bounds of the portal floor (2D check)
         bool isWithinPortalFloor =
@@ -126,8 +130,8 @@ public class PortalManager : MonoBehaviour
         if (isWithinPortalFloor && !hidePortal && !isVR)
         {
             EnableVRMode();
-            
-        } 
+
+        }
 
         if (StarTreeMatching.unlockedPortal)
         {

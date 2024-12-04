@@ -33,6 +33,8 @@ public class VRMovement : MonoBehaviour
 
     private Vector3 targetPosition;
     private Collider headCollider;
+    private Collider camCollider;
+    private bool isFlyingUp = false;  // Flag to track if the movement has started
 
     void Start()
     {
@@ -42,6 +44,7 @@ public class VRMovement : MonoBehaviour
 
         // Get the Rigidbody component from the head object
         headRb = head.GetComponent<Rigidbody>();
+        camCollider = realWorldLocation.GetComponent<Collider>();
         if (headRb == null)
         {
             Debug.LogError("Rigidbody not found on the head object!");
@@ -60,7 +63,7 @@ public class VRMovement : MonoBehaviour
             // Disable kinematic component in VR mode (use physics)
             headRb.isKinematic = false;
             headRb.useGravity = true;
-            headCollider.enabled = true;
+            camCollider.enabled = true;
 
             if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.RTouch))
             {
@@ -101,83 +104,96 @@ public class VRMovement : MonoBehaviour
             {
                 Debug.Log("withinVirtualFLOOR");
             }
-            
 
-            if (starCarryBack)
-            {
-                if (targetPosition == Vector3.zero) // Check if the targetPosition has not been set yet
-                {
-                    // Create a target position based on the real-world location's X and Z, and set Y to -13.8
-                    targetPosition = new Vector3(
-                        realWorldLocation.transform.position.x, // Use the X position from realWorldLocation
-                        -13.8f,                                 // Keep Y fixed at -13.8
-                        realWorldLocation.transform.position.z  // Use the Z position from realWorldLocation
-                    );
-                }
 
-                // Smoothly move the head towards the target position
-                head.transform.position = Vector3.Lerp(
-                    head.transform.position,       // Start position (current head position)
-                    targetPosition,                // End position (real world location with fixed Y)
-                    carryBackSpeed * Time.deltaTime // Smooth movement speed
-                );
+            // if (starCarryBack)
+            // {
+            //     if (targetPosition == Vector3.zero) // Check if the targetPosition has not been set yet
+            //     {
+            //         // Create a target position based on the real-world location's X and Z, and set Y to -13.8
+            //         targetPosition = new Vector3(
+            //             realWorldLocation.transform.position.x, // Use the X position from realWorldLocation
+            //             -13.8f,                                 // Keep Y fixed at -13.8
+            //             realWorldLocation.transform.position.z  // Use the Z position from realWorldLocation
+            //         );
+            //     }
 
-                // Optionally, stop the movement once close enough to the target
-                if (Vector3.Distance(new Vector3(head.transform.position.x, -13.8f, head.transform.position.z), targetPosition) < 0.2f)
-                {
-                    // Snap to the exact target position when close enough
-                    head.transform.position = targetPosition;
+            //     // Smoothly move the head towards the target position
+            //     head.transform.position = Vector3.Lerp(
+            //         head.transform.position,       // Start position (current head position)
+            //         targetPosition,                // End position (real world location with fixed Y)
+            //         carryBackSpeed * Time.deltaTime // Smooth movement speed
+            //     );
 
-                    // Reset the carry-back flag after reaching the target
-                    starCarryBack = false;
-                    targetPosition = Vector3.zero; // Reset target position
-                }
-            }
+            //     // Optionally, stop the movement once close enough to the target
+            //     if (Vector3.Distance(new Vector3(head.transform.position.x, -13.8f, head.transform.position.z), targetPosition) < 0.2f)
+            //     {
+            //         // Snap to the exact target position when close enough
+            //         head.transform.position = targetPosition;
+
+            //         // Reset the carry-back flag after reaching the target
+            //         starCarryBack = false;
+            //         targetPosition = Vector3.zero; // Reset target position
+            //     }
+            // }
 
             // Inside the virtual floor area, disable flying and jump
-            else if (isWithinVirtualFloor) // jumping, colliders off 
+            if (isWithinVirtualFloor || isWithinPortalFloor) // jumping, colliders off 
             {
                 headRb.useGravity = true;
 
+
                 if (isWithinPortalFloor && OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
+                    Debug.Log("flyintopass");
 
                     float targetYPosition = 0f;
-                    // JUMP/FLY UP INTO PASS THROUGH 
-                    // Start moving the head up to y = 0 if the head is not already at y = 0
-                    if (head.transform.position.y < targetYPosition)
+
+                    // Start the flying/jumping process
+                    if (head.transform.position.y < targetYPosition && !isFlyingUp)
                     {
-                        // Move the head up gradually towards y = 0 using Lerp or MoveTowards
-                        head.transform.position = Vector3.Lerp(
-                            head.transform.position,  // Current position
-                            new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z),  // Target position (y = 0)
-                            Time.deltaTime * 1f  // Smooth movement speed
-                        );
+                        Debug.Log("doingthis");
+                        isFlyingUp = true;  // Set the flag to true so that the head keeps moving up
                     }
-                    else
+                }
+
+                // If we started flying up, continue the movement until we reach the target position
+                if (isFlyingUp)
+                {
+                    float targetYPosition = 0f;
+
+                    // Move the head up gradually towards y = 0 using Lerp or MoveTowards
+                    head.transform.position = Vector3.Lerp(
+                        head.transform.position,  // Current position
+                        new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z),  // Target position (y = 0)
+                        Time.deltaTime * 1f  // Smooth movement speed
+                    );
+
+                    // Once the head reaches the target position, stop the movement and perform actions
+                    if (Mathf.Abs(head.transform.position.y - targetYPosition) < 0.1f)
                     {
-                        // Ensure that the head stays exactly at y = 0 once it reaches that point
+                        // Snap the head position exactly to y = 0 to avoid any floating point precision errors
                         head.transform.position = new Vector3(head.transform.position.x, targetYPosition, head.transform.position.z);
 
-
-                        headCollider.enabled = false;
-                        // Enable AR Mode or other actions after the movement is complete
+                        // Disable the collider and enable AR mode
+                        camCollider.enabled = false;
                         portalManager.EnableARMode();
-                        
-                    }
 
+                        isFlyingUp = false;  // Reset the flag once the movement is complete
+                    }
                 }
                 if (OVRInput.GetDown(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
+                    Debug.Log("jump");
                     // JUMP: Apply an upward force
                     headRb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 }
 
             }
-            else // flying, turn on colliders, 
+            else if (!isWithinPortalFloor && !isWithinVirtualFloor) // flying, turn on colliders, 
             {
-                // Flying mode
-                if (!isWithinVirtualFloor)
+                //Flying mode
+                if (!isWithinVirtualFloor && !isWithinPortalFloor)
                 {
                     headRb.useGravity = false;
                 }
@@ -188,7 +204,7 @@ public class VRMovement : MonoBehaviour
                 //}
                 //else
                 //{
-                //    headRb.useGravity = false;
+                //    
                 //}
 
                 // Check if the trigger is held down to start flying
@@ -199,7 +215,7 @@ public class VRMovement : MonoBehaviour
 
                     // Get the controller's forward direction
                     Vector3 controllerDirection = controller.transform.forward;
-                   
+
 
                     // Apply force to move in the controller's direction
                     headRb.AddForce(controllerDirection * speed, ForceMode.Acceleration);
@@ -207,8 +223,8 @@ public class VRMovement : MonoBehaviour
                 else if (OVRInput.GetUp(OVRInput.Button.PrimaryIndexTrigger, OVRInput.Controller.LTouch))
                 {
                     isFlying = false; // Disable flying mode
+                                      //headRb.useGravity = false;
 
-                    
 
                 }
             }

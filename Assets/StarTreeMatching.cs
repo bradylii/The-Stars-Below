@@ -27,11 +27,23 @@ public class StarTreeMatching : MonoBehaviour
         }
     }
 
+    public void resetKey()
+    {
+        // Reset the color of the holder and portalOpener back to white (or any color that represents the "unlocked" state)
+        //ChangeHolderColor(Color.white);
+        ChangePortalOpenerColor(Color.white);
+
+        // Set the unlockedPortal flag back to false
+        unlockedPortal = false;
+
+        Debug.Log("Key reset: Portal is now locked and objects are back to original state.");
+    }
+
     // Lock the star into the holder
     private void LockStarInHolder(GameObject star)
     {
         star.transform.position = this.transform.position;
-       
+
 
         // Change the color of the star holder and portalOpener to green
         ChangeHolderColor(lockedColor);
@@ -39,7 +51,7 @@ public class StarTreeMatching : MonoBehaviour
 
         // Optionally disable any further interaction (e.g., grabbing) or add other effects
         Debug.Log("Star locked into the holder!");
-        
+
     }
 
     // Change the color of the holder object to the specified color
